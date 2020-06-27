@@ -6,7 +6,7 @@ import digi.xbee.serial
 if __name__ == '__main__':
     #   xbee = serial.Serial('/dev/ttyAMA0', 9600)
     xbee = serial.Serial()
-    xbee.port = '/dev/ttyAMA0'
+    xbee.port = '/dev/ttyUSB0'
     xbee.baudrate = 9600
     xbee.timeout = 1
     xbee.writeTimeout = 1
