@@ -142,7 +142,7 @@ def motor_control():
     try:
         while 1: # If you want to add switch, please use this function
             if abs(Gx) >= 6 or abs(Gy) >= 6 or abs(Gz) >= 6:
-                GPIO.output(A, GPIO.Low)  # Rotate Right
+                GPIO.output(A, GPIO.HIGH)  # Rotate Right
                 GPIO.output(B, GPIO.LOW)
 
             # GPIO.output(A, GPIO.LOW)  # Stop Rotate

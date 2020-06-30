@@ -9,7 +9,7 @@ device = XBeeDevice("/dev/ttyUSB0",9600)
 
 device.open()
 device.set_sync_ops_timeout(100)
-# remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
+remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
 
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
@@ -24,7 +24,7 @@ GYRO_XOUT_H = 0x43
 GYRO_YOUT_H = 0x45
 GYRO_ZOUT_H = 0x47
 
-
+wait_time = 0.05
 
 def MPU_Init():
     # write to sample rate register
@@ -55,10 +55,13 @@ def read_raw_data(addr):
         value = value - 65536
     return value
 
-#Send data using remote object
+bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
+Device_Address = 0x68  # MPU6050 device address
+MPU_Init()
 
-def send_data():
-    ##	#Read Accelerometer raw value
+cycles = 1000
+for x in range(cycles):
+    ##  #Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
     acc_y = read_raw_data(ACCEL_YOUT_H)
     acc_z = read_raw_data(ACCEL_ZOUT_H)
@@ -76,15 +79,14 @@ def send_data():
     Gx = gyro_x / 131.0
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
-    datas = [Ax, Ay, Ax, Gx, Gy, Gz]
-    # strin = 'hello'.encode('utf-8')
-    messages = '[{},{},{},{},{},{}]'.format(Ax,Ay,Az,Gx,Gy,Gz)
-    # device.send_data_broadcast("Hello World")
-    device.send_data_broadcast(messages)
+    messages = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
+    print('Sending: %s' % messages)
+    try:
+        device.send_data_async(remote_device,messages)
+        print('Data sent success')
+    except Exception as e:
+        print('Transmit Fail : %s' % str(e))
 
+    sleep(wait_time)
 
-bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
-Device_Address = 0x68  # MPU6050 device address
-MPU_Init()
-send_data()
 

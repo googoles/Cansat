@@ -1,8 +1,5 @@
 import smbus  # import SMBus module of I2C
 from time import sleep  # import
-import datetime as dt
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from digi.xbee.devices import *
 
 device = XBeeDevice("/dev/ttyUSB0",9600)
@@ -10,6 +7,7 @@ device = XBeeDevice("/dev/ttyUSB0",9600)
 device.open()
 device.set_sync_ops_timeout(100)
 remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
+
 
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
