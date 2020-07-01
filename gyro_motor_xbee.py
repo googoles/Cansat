@@ -4,7 +4,6 @@ from digi.xbee.devices import *
 import RPi.GPIO as GPIO
 
 device = XBeeDevice("/dev/ttyUSB0",9600)
-
 device.open()
 device.set_sync_ops_timeout(100)
 remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
@@ -12,7 +11,7 @@ remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A
 # Set time
 current_time = 0.
 start_time = time.time()
-
+#
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
 SMPLRT_DIV = 0x19
@@ -120,8 +119,8 @@ def motor_control_stop(tf):
 
 while True:
 
-    if abs(Gx) >= 6 or abs(Gy) >= 6 or abs(Gz) >= 6:
-        motor_control_right(10)
+    if abs(Gx) >= 1 or abs(Gy) >= 1 or abs(Gz) >= 1:
+        motor_control_right(5)
     else:
         motor_control_stop(5)
 
