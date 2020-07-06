@@ -66,7 +66,7 @@ bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
 Device_Address = 0x68  # MPU6050 device address
 MPU_Init()
 
-cycles = 10000000000
+cycles = 10000000000000
 for x in range(cycles): # Sending data to Land
     ##  #Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
