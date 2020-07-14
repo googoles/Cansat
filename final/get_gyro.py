@@ -75,26 +75,30 @@ class Gyro:
     #         print('Sending: %s' % mpu_data)
     # cycles = 10000000000000
     while 1:
-        ##  #Read Accelerometer raw value
-        acc_x = read_raw_data(ACCEL_XOUT_H)
-        acc_y = read_raw_data(ACCEL_YOUT_H)
-        acc_z = read_raw_data(ACCEL_ZOUT_H)
+        try:
 
-        # Read Gyroscope raw value
-        gyro_x = read_raw_data(GYRO_XOUT_H)
-        gyro_y = read_raw_data(GYRO_YOUT_H)
-        gyro_z = read_raw_data(GYRO_ZOUT_H)
+            ##  #Read Accelerometer raw value
+            acc_x = read_raw_data(ACCEL_XOUT_H)
+            acc_y = read_raw_data(ACCEL_YOUT_H)
+            acc_z = read_raw_data(ACCEL_ZOUT_H)
 
-        # Full scale range +/- 250 degree/C as per sensitivity scale factor
-        Ax = acc_x / 16384.0
-        Ay = acc_y / 16384.0
-        Az = acc_z / 16384.0
+            # Read Gyroscope raw value
+            gyro_x = read_raw_data(GYRO_XOUT_H)
+            gyro_y = read_raw_data(GYRO_YOUT_H)
+            gyro_z = read_raw_data(GYRO_ZOUT_H)
 
-        Gx = gyro_x / 131.0
-        Gy = gyro_y / 131.0
-        Gz = gyro_z / 131.0
-        mpu_data = '[{},{},{},{},{},{}]'.format(1, 2, 3, 4, 5, 6)
-        print('Sending: %s' % mpu_data)
+            # Full scale range +/- 250 degree/C as per sensitivity scale factor
+            Ax = acc_x / 16384.0
+            Ay = acc_y / 16384.0
+            Az = acc_z / 16384.0
+
+            Gx = gyro_x / 131.0
+            Gy = gyro_y / 131.0
+            Gz = gyro_z / 131.0
+            mpu_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
+            print('Sending: %s' % mpu_data)
+        except OSError:
+            pass
 
     # for _ in range(cycles):  # Sending data to Land
     #     ##  #Read Accelerometer raw value
@@ -117,6 +121,5 @@ class Gyro:
     #     Gz = gyro_z / 131.0
     #     mpu_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
     #     print('Sending: %s' % mpu_data)
-
 
     MPU_Init()
