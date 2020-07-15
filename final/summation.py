@@ -1,5 +1,5 @@
 import sys
-import get_gyro
+import get_info
 from digi.xbee.devices import *
 import motor
 import time
@@ -15,9 +15,9 @@ if __name__ == "__main__":
 
     while 1:
         try:
-            gyro = get_gyro.Gyro()
+            gyro = get_info.Gyro()
             # gyro.get_data()
-            device.send_data_async(remote_device, gyro.mpu_data)
+            device.send_data_async(remote_device, gyro.final_data)
             print('Data sent success')
             if abs(gyro.Gx) >= 1 or abs(gyro.Gy) >= 1 or abs(gyro.Gz) >= 1:
                 motor.motor_control_right(5)
@@ -28,5 +28,7 @@ if __name__ == "__main__":
             print(current_time)
         except OSError:
             pass
+
+
 
 

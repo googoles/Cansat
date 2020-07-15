@@ -1,20 +1,19 @@
 import serial
+import time
+import string
+import pynmea2
 
-port = '/dev/ttyAMA0'
+port = "/dev/ttyAMA0"
+ser = serial.Serial(port, baudrate=9600, timeout=0.5)
 
-def parseGPS(data):
+while True:
 
-    if data[0:6] == "$GPGGA":
-        s = data.split(',')
-        if s[7] == '0':
-            print('No satellite data available')
-            return
+    dataout = pynmea2.NMEAStreamReader()
+    newdata = ser.readline()
 
-            time = s[1][0:2] + ':' +s[1][2:4] + ':' + s[1][4:6]
-            lat = decode(s[2])
-            dirLat = s[3]
-            lon = decode(s[5])
-            dirLon = s[5]
-            alt = s[9] + 'm'
-            sat = s[7]
-            print('')
+    if newdata[0:6] == "$GPRMC":
+        newmsg = pynmea2.parse(newdata)
+        lat = newmsg.latitude
+        lng = newmsg.longitude
+        gps = "Latitude=" + str(lat) + "and Longitude=" + str(lng)
+        print(gps)

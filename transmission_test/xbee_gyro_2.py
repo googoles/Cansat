@@ -8,7 +8,6 @@ device.open()
 device.set_sync_ops_timeout(100)
 remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
 
-
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
 SMPLRT_DIV = 0x19
@@ -77,7 +76,7 @@ for x in range(cycles):
     Gx = gyro_x / 131.0
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
-    messages = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
+    messages = '[{},{},{},{},{},{}]'.format(Gx, Gy, Gz,Ax, Ay, Az)
     print('Sending: %s' % messages)
     try:
         device.send_data_async(remote_device,messages)
@@ -86,5 +85,6 @@ for x in range(cycles):
         print('Transmit Fail : %s' % str(e))
 
     sleep(wait_time)
+
 
 
