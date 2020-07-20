@@ -93,7 +93,6 @@ class Gyro:
             gps = "Latitude=" + str(lat) + "and Longitude=" + str(lng)
             print(gps)
 
-
         ##  #Read Accelerometer raw value
         acc_x = read_raw_data(ACCEL_XOUT_H)
         acc_y = read_raw_data(ACCEL_YOUT_H)

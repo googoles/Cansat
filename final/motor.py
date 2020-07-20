@@ -1,11 +1,19 @@
 import RPi.GPIO as GPIO
 from time import sleep  # import
 
+pin1 = 23
+pin2 = 24
+EN1 = 18 # for pwm
+
 def init():
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(23, GPIO.OUT)  # MOTOR 1 A,B Setup
-    GPIO.setup(24, GPIO.OUT)
+    GPIO.setup(pin1, GPIO.OUT)  # MOTOR 1 A,B Setup
+    GPIO.setup(pin2, GPIO.OUT)
+    GPIO.setup(EN1, GPIO.OUT)
+
+    pwm1 = GPIO.PWM(EN1,200)
+    pwm1.start(50)
 
 class Motor:
 

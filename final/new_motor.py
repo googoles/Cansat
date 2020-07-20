@@ -13,10 +13,6 @@ GPIO.setup(pin1, GPIO.OUT)
 GPIO.setup(pin2,GPIO.OUT)
 GPIO.setup(EN1,GPIO.OUT)
 
-
-# GPIO.setup(23, GPIO.OUT)  # MOTOR 1 A,B Setup
-# GPIO.setup(24, GPIO.OUT)
-
 pwm1 = GPIO.PWM(EN1,100)
 pwm1.start(50)
 
