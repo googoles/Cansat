@@ -88,6 +88,10 @@ while True:
         lng = newmsg.longitude
         gps = "Latitude=" + str(lat) + "and Longitude=" + str(lng)
         print(gps)
+    else:
+        lat = 0
+        lng = 0
+
 
     ##  #Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)

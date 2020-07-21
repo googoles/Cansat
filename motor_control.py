@@ -4,8 +4,8 @@ import time
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
-A = 23
-B = 24
+A = 24
+B = 23
 
 GPIO.setup(A,GPIO.OUT) # Motor A,B Setup
 GPIO.setup(B,GPIO.OUT)
@@ -15,7 +15,7 @@ try:
         GPIO.output(A,GPIO.HIGH) # Rotate Right
         GPIO.output(B,GPIO.LOW)
 
-        time.sleep(5)
+        time.sleep(2)
 
         GPIO.output(A,GPIO.LOW) # Stop Rotate
         GPIO.output(B,GPIO.LOW)
@@ -25,7 +25,7 @@ try:
         GPIO.output(A,GPIO.LOW) # Rotate Left
         GPIO.output(B,GPIO.HIGH)
 
-        time.sleep(5)
+        time.sleep(2)
 
         GPIO.output(A, GPIO.LOW)  # Stop Rotate
         GPIO.output(B, GPIO.LOW)
