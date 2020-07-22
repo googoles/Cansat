@@ -5,7 +5,7 @@ from digi.xbee.devices import *
 device = XBeeDevice("/dev/ttyUSB0",9600)
 
 device.open()
-device.set_sync_ops_timeout(100)
+device.set_sync_ops_timeout(1000)
 remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
 
 # some MPU6050 Registers and their Address
@@ -56,9 +56,10 @@ bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
 Device_Address = 0x68  # MPU6050 device address
 MPU_Init()
 
-cycles = 1000
-for x in range(cycles):
-    ##  #Read Accelerometer raw value
+# cycles = 1000000000
+while 1:
+
+    # Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
     acc_y = read_raw_data(ACCEL_YOUT_H)
     acc_z = read_raw_data(ACCEL_ZOUT_H)
@@ -83,7 +84,7 @@ for x in range(cycles):
         print('Data sent success')
     except Exception as e:
         print('Transmit Fail : %s' % str(e))
-
+        pass
     sleep(wait_time)
 
 

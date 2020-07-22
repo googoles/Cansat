@@ -1,5 +1,5 @@
 import sys
-import get_info
+import get_gyro
 from digi.xbee.devices import *
 import motor
 import time
@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     while 1:
         try:
-            gyro = get_info.Gyro()
+            gyro = get_gyro.Gyro()
             # gyro.get_data()
             device.send_data_async(remote_device, gyro.final_data)
             print('Data sent success')

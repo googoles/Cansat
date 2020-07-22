@@ -1,17 +1,9 @@
 import smbus  # import SMBus module of I2C
 from time import sleep  # import
-from digi.xbee.devices import *
-import RPi.GPIO as GPIO
+import datetime as dt
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
-device = XBeeDevice("/dev/ttyUSB0",9600)
-device.open()
-device.set_sync_ops_timeout(100)
-remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
-
-# Set time
-current_time = 0.
-start_time = time.time()
-#
 # some MPU6050 Registers and their Address
 PWR_MGMT_1 = 0x6B
 SMPLRT_DIV = 0x19
@@ -25,13 +17,6 @@ GYRO_XOUT_H = 0x43
 GYRO_YOUT_H = 0x45
 GYRO_ZOUT_H = 0x47
 
-wait_time = 0.05
-# Set GPIO
-def init():
-    GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(23, GPIO.OUT)  # MOTOR 1 A,B Setup
-    GPIO.setup(24, GPIO.OUT)
 
 def MPU_Init():
     # write to sample rate register
@@ -49,6 +34,7 @@ def MPU_Init():
     # Write to interrupt enable register
     bus.write_byte_data(Device_Address, INT_ENABLE, 1)
 
+
 def read_raw_data(addr):
     # Accelero and Gyro value are 16-bit
     high = bus.read_byte_data(Device_Address, addr)
@@ -62,13 +48,13 @@ def read_raw_data(addr):
         value = value - 65536
     return value
 
-bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
-Device_Address = 0x68  # MPU6050 device address
-MPU_Init()
 
-cycles = 10000000000000
-for x in range(cycles): # Sending data to Land
-    ##  #Read Accelerometer raw value
+def animate(i, xs, ys):
+    print("i : ", i)
+    # Add x and y to lists
+    ##    xs.append(dt.datetime.now().strftime('%H:%M:%S.%f'))
+    xs.append(dt.datetime.now().strftime('%H%M%S'))
+    ##	#Read Accelerometer raw value
     acc_x = read_raw_data(ACCEL_XOUT_H)
     acc_y = read_raw_data(ACCEL_YOUT_H)
     acc_z = read_raw_data(ACCEL_ZOUT_H)
@@ -86,46 +72,42 @@ for x in range(cycles): # Sending data to Land
     Gx = gyro_x / 131.0
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
-    messages = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
-    print('Sending: %s' % messages)
-    try:
-        device.send_data_async(remote_device,messages)
-        print('Data sent success')
-    except Exception as e:
-        print('Transmit Fail : %s' % str(e))
 
-    sleep(wait_time)
+    print("Gx=%.2f" % Gx, u'\u00b0' + "/s", "\tGy=%.2f" % Gy, u'\u00b0' + "/s", "\tGz=%.2f" % Gz, u'\u00b0' + "/s",
+          "\tAx=%.2f g" % Ax, "\tAy=%.2f g" % Ay, "\tAz=%.2f g" % Az)
 
-def motor_control_right(tf):
-    init()
-    GPIO.output(23,GPIO.HIGH)
-    GPIO.output(24,GPIO.LOW)
-    sleep(tf)
-    GPIO.cleanup()
+    ys.append(Ax)  # we are plotting Ax timebeing
+    sleep(1)
 
-def motor_control_left(tf):
-    init()
-    GPIO.output(23,GPIO.LOW)
-    GPIO.output(24,GPIO.HIGH)
-    sleep(tf)
-    GPIO.cleanup()
+    # Limit x and y lists to 40 items
 
-def motor_control_stop(tf):
-    init()
-    GPIO.output(23,GPIO.LOW)
-    GPIO.output(24,GPIO.LOW)
-    sleep(tf)
-    GPIO.cleanup()
+    xs = xs[-40:]
+    ys = ys[-40:]
 
-while True:
+    print("ys: ", ys)
+    print("xs : ", xs)
+    # Draw x and y lists
+    ax.clear()
+    ax.plot(xs, ys)
 
-    if abs(Gx) >= 1 or abs(Gy) >= 1 or abs(Gz) >= 1:
-        motor_control_right(5)
-    else:
-        motor_control_stop(5)
+    # Format plot
+    print("Format plot")
+    plt.xticks(rotation=45, ha='right')
+    plt.subplots_adjust(bottom=0.20)
 
-    current_time = time.time() - start_time
-    print(current_time)
+    plt.title('acceleration data over Time')
+    plt.ylabel('m/s')
 
 
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+xs = []
+ys = []
+bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
+Device_Address = 0x68  # MPU6050 device address
 
+MPU_Init()
+
+print(" Reading Data of Gyroscope and Accelerometer")
+ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys), interval=1)
+plt.show()

@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import time
 
 GPIO.setmode(GPIO.BOARD)
-AIN1 = 23
-AIN2 = 24
+AIN1 = 24
+AIN2 = 23
 PWMA = 18
 c_step = 10
 GPIO.setwarnings(False)

@@ -74,7 +74,6 @@ class Gyro:
     #         mpu_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
     #         print('Sending: %s' % mpu_data)
     # cycles = 10000000000000
-    MPU_Init()
     while 1:
         try:
 
@@ -96,11 +95,10 @@ class Gyro:
             Gx = gyro_x / 131.0
             Gy = gyro_y / 131.0
             Gz = gyro_z / 131.0
-            # mpu_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
+            mpu_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
             # print('Sending: %s' % mpu_data)
         except OSError:
             pass
-
 
     # for _ in range(cycles):  # Sending data to Land
     #     ##  #Read Accelerometer raw value
@@ -123,4 +121,6 @@ class Gyro:
     #     Gz = gyro_z / 131.0
     #     mpu_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
     #     print('Sending: %s' % mpu_data)
+
+        MPU_Init()
 

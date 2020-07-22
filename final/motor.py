@@ -12,8 +12,8 @@ def init():
     GPIO.setup(pin2, GPIO.OUT)
     GPIO.setup(EN1, GPIO.OUT)
 
-    pwm1 = GPIO.PWM(EN1,200)
-    pwm1.start(50)
+    pwm1 = GPIO.PWM(EN1,1000)
+    pwm1.start(90)
 
 class Motor:
 
