@@ -77,7 +77,7 @@ class Gyro:
     # cycles = 10000000000000
     while 1:
         # try:
-
+        MPU_Init()
         ##  #Read Accelerometer raw value
         acc_x = read_raw_data(ACCEL_XOUT_H)
         acc_y = read_raw_data(ACCEL_YOUT_H)
@@ -100,7 +100,7 @@ class Gyro:
         # print('Sending: %s' % mpu_data)
         # except OSError:
         #     pass
-    MPU_Init()
+
 
     # for _ in range(cycles):  # Sending data to Land
     #     ##  #Read Accelerometer raw value
