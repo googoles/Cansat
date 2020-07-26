@@ -96,12 +96,22 @@ def read_raw_data(addr):
 
 def motor_control_right():
 
-    pwm1 = GPIO.PWM(EN1, 1000)  # 100hz sampling
-    pwm1.start(90)  # 90% Throlttle
-    pwm1.ChangeDutyCycle(90)
+    # pwm1 = GPIO.PWM(EN1, 1000)  # 100hz sampling
+    # pwm1.start(90)  # 90% Throlttle
+    pwm1.ChangeDutyCycle(95)
     GPIO.output(PIN1,GPIO.HIGH)
     GPIO.output(PIN2,GPIO.LOW)
-    GPIO.cleanup()
+    # GPIO.cleanup()
+
+def motor_control_left():
+    pwm1.ChangeDutyCycle(95)
+    GPIO.output(PIN1,GPIO.LOW)
+    GPIO.output(PIN2,GPIO.HIGH)
+
+def motor_control_stop():
+    pwm1.ChangeDutyCycle(0)
+    GPIO.output(PIN1,GPIO.LOW)
+    GPIO.output(PIN2,GPIO.LOW)
 
 def GPS_Info():
     global NMEA_buff
@@ -185,9 +195,10 @@ if __name__ == "__main__":
                     print("Start Motor")
 
             if motor_count == 1:
-                pwm1.ChangeDutyCycle(95)
-                GPIO.output(PIN1, GPIO.HIGH)
-                GPIO.output(PIN2, GPIO.LOW)
+                # pwm1.ChangeDutyCycle(95)
+                # GPIO.output(PIN1, GPIO.HIGH)
+                # GPIO.output(PIN2, GPIO.LOW)
+                motor_control_right()
                 print("Motor is working")
 
     except OSError:
