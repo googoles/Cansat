@@ -77,9 +77,11 @@ while 1:
     Gx = gyro_x / 131.0
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
-    messages = '[{},{},{},{},{},{}]'.format(Gx, Gy, Gz,Ax, Ay, Az)
-    print('Sending: %s' % messages)
+    messages = '{},{},{},{},{},{}'.format(Ax, Ay, Az,Gx, Gy, Gz)
+    print('Sending Gyro: %s' % messages)
+
     try:
+        device.send_data_async(remote_device,'Sending Gyro Data')
         device.send_data_async(remote_device,messages)
         print('Data sent success')
     except Exception as e:

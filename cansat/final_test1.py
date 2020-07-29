@@ -94,7 +94,7 @@ def motor_control_right():
     pwm1.ChangeDutyCycle(90)
     GPIO.output(PIN1,GPIO.HIGH)
     GPIO.output(PIN2,GPIO.LOW)
-    GPIO.cleanup()
+    # GPIO.cleanup()
 
 if __name__ == "__main__":
     try:
@@ -118,9 +118,34 @@ if __name__ == "__main__":
             Gy = gyro_y / 131.0
             Gz = gyro_z / 131.0
 
-            final_data = '[{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz)
-            print('Sending: %s' % final_data)
-            device.send_data_async(remote_device,final_data)
+            Ax = round(Ax,4)
+            Ay = round(Ay,4)
+            Az = round(Az,4)
+            Gx = round(Gx,4)
+            Gy = round(Gy,4)
+            Gz = round(Gz,4)
+
+            # data float 처리 4자리?
+            csum = Ax+Ay+Az+Gx+Gy+Gz
+            # print(csum)
+            csum_raw = '{:.4f}'.format(csum)
+            print(csum_raw)
+            # mpu_data_raw = '*,{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(Gx, Gy, Gz,Ax, Ay, Az)
+            mpu_data_raw = '*,{},{},{},{},{},{}'.format(Gx, Gy, Gz, Ax, Ay, Az)
+            front_key = bytearray([0x76,0x00,0x60,0x00])
+            mpu_data_byte = mpu_data_raw.encode()
+            mpu_data_bytearray = bytearray(mpu_data_byte)
+            colon = bytearray(b',')
+            csum_encode = csum_raw.encode()
+            csum_bytearr = bytearray(csum_encode)
+            final_key = bytearray([0x0D,0x0A])
+            send_data = front_key + mpu_data_bytearray + colon + csum_bytearr + final_key
+            # print(mpu_data_bytearray)
+            # sent_to_land = [0x76,0x00,0x60,0x00,mpu_data,',',csum,0x0D,0x0A]
+            print('Sending: %s' % send_data)
+            print(type(csum_bytearr))
+
+            device.send_data_async(remote_device, send_data)
             time.sleep(wait_time)
             if abs(Gx) > 15 or abs(Gy) > 15 or abs(Gz) > 15:
                 if motor_count == 0:
@@ -131,6 +156,7 @@ if __name__ == "__main__":
                 pwm1.ChangeDutyCycle(95)
                 GPIO.output(PIN1, GPIO.HIGH)
                 GPIO.output(PIN2, GPIO.LOW)
+                # motor_control_right()
                 print("Motor is working")
 
     except OSError:

@@ -25,7 +25,10 @@ ser = serial.Serial(port, baudrate=9600, timeout=0.5)
 PIN1 = 24
 PIN2 = 23
 EN1 = 18
-motor_count = 0 # For Initial Start Motor
+initial_motor_count = 0 # For Initial Start Motor
+motor_right = 0
+motor_left = 0
+motor_stop = 0
 # for pwm
 
 # def init():
@@ -190,16 +193,33 @@ if __name__ == "__main__":
                 time.sleep(wait_time)
 
             if abs(Gx) > 15 or abs(Gy) > 15 or abs(Gz) > 15:
-                if motor_count == 0:
-                    motor_count += 1
+                if initial_motor_count == 0:
+                    initial_motor_count += 1
                     print("Start Motor")
 
-            if motor_count == 1:
+            if initial_motor_count == 1:
                 # pwm1.ChangeDutyCycle(95)
                 # GPIO.output(PIN1, GPIO.HIGH)
                 # GPIO.output(PIN2, GPIO.LOW)
                 motor_control_right()
                 print("Motor is working")
+
+            if Gz > 15:
+                motor_left = 1
+                if initial_motor_count == 1 and motor_left == 1:
+                    motor_right = 0
+                    motor_control_left()
+
+            if Gz < -15:
+                motor_right = 1
+                if initial_motor_count == 1 and motor_right == 1:
+                    motor_left = 0
+                    motor_control_right()
+
+            if abs(Gz) < 15:
+                initial_motor_count = 0
+
+
 
     except OSError:
         pass

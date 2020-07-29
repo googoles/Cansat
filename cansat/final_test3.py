@@ -9,6 +9,8 @@ import numpy as np
 import argparse
 import cv2
 
+capture = cv2.VideoCapture("")
+
 
 # Integrated
 # With opencv

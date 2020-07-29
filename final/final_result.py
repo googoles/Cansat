@@ -122,7 +122,7 @@ if __name__ == "__main__":
         try:
             gyro = get_info.Gyro()
             # gyro.get_data()
-            device.send_data_async(remote_device, gyro.final_data)
+            device.send_data_async(remote_device, gyro.mpu_data)
             print('Data sent success')
             if abs(gyro.Gx) >= 1 or abs(gyro.Gy) >= 1 or abs(gyro.Gz) >= 1:
                 motor.motor_control_right(5)
