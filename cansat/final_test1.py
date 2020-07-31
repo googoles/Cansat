@@ -143,7 +143,7 @@ if __name__ == "__main__":
             # print(mpu_data_bytearray)
             # sent_to_land = [0x76,0x00,0x60,0x00,mpu_data,',',csum,0x0D,0x0A]
             print('Sending: %s' % send_data)
-            print(type(csum_bytearr))
+            # print(type(csum_bytearr))
 
             device.send_data_async(remote_device, send_data)
             time.sleep(wait_time)

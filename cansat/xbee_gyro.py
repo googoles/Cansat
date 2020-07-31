@@ -2,7 +2,7 @@ import smbus  # import SMBus module of I2C
 from time import sleep  # import
 from digi.xbee.devices import *
 
-device = XBeeDevice("/dev/ttyUSB0",9600)
+device = XBeeDevice("/dev/ttyS0",9600)
 
 device.open()
 device.set_sync_ops_timeout(1000)
@@ -20,9 +20,8 @@ ACCEL_ZOUT_H = 0x3F
 GYRO_XOUT_H = 0x43
 GYRO_YOUT_H = 0x45
 GYRO_ZOUT_H = 0x47
-TEMP = 0x41
 
-wait_time = 0.05
+wait_time = 0.01
 
 def MPU_Init():
     # write to sample rate register
@@ -78,16 +77,35 @@ while 1:
     Gx = gyro_x / 131.0
     Gy = gyro_y / 131.0
     Gz = gyro_z / 131.0
-    messages = '{},{},{},{},{},{}'.format(Ax, Ay, Az,Gx, Gy, Gz)
-    print('Sending Gyro: %s' % messages)
+    messages = '{:.5f},{:.5f},{:.5f},{:.5f},{:.5f},{:.5f},{},{},{}'.format(Ax, Ay, Az, Gx, Gy, Gz, 34.610854, 127.205932, 0)
+    # print('Sending Data: %s' % messages)
+    #
+    # csum_raw = '{:.4f}'.format(csum)
+    # print(csum_raw)
+    # mpu_data_raw = '*,{},{},{},{},{},{}'.format(Gx, Gy, Gz, Ax, Ay, Az)
+    front_key = bytearray([0x76, 0x00, 0x60, 0x00])
+    encoded_messages = messages.encode()
+    messages_bytearray = bytearray(encoded_messages)
+    colon = bytearray(b',')
+    # csum_encode = csum_raw.encode()
+    # csum_bytearr = bytearray(csum_encode)
+    final_key = bytearray([0x0D, 0x0A])
+    send_data = front_key + messages_bytearray + colon + final_key
+    # # print(mpu_data_bytearray)
+    # # sent_to_land = [0x76,0x00,0x60,0x00,mpu_data,',',csum,0x0D,0x0A]
 
-    try:
-        # device.send_data_async(remote_device,'Sending Gyro Data')
-        device.send_data_async(remote_device,messages)
-        print('Data sent success')
-    except Exception as e:
-        print('Transmit Fail : %s' % str(e))
-        pass
+    # print(type(csum_bytearr))
+    device.send_data_async(remote_device, send_data)
+    print(send_data)
+    # try:
+    #
+    #     # device.send_data_async(remote_device,'Sending Gyro Data')
+    #     device.send_data_async(remote_device,send_data)
+    #     print('Sending: %s' % send_data)
+    #     print('Data sent success')
+    # except Exception as e:
+    #     print('Transmit Fail : %s' % str(e))
+    #     pass
     sleep(wait_time)
 
 
