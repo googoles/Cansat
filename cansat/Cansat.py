@@ -1,24 +1,23 @@
 import sys
 from digi.xbee.devices import *
 import time
+import os
 import RPi.GPIO as GPIO
 sys.path.append('/home/pi/python_project/')
 import smbus
 import serial
-import numpy as np
-import argparse
 import cv2
+import argparse
+import numpy as np
 
-
-##opencv와 gyro send 분리
 
 # Xbee Transmission Part
 
-device = XBeeDevice("/dev/ttyUSB0", 9600)
+device = XBeeDevice("/dev/ttyUSB0",9600)
 device.open()
-device.set_sync_ops_timeout(1000000000)
+device.set_sync_ops_timeout(100)
 remote_device = RemoteXBeeDevice(device, XBee64BitAddress.from_hex_string("0013A20040CA046A"))
-# start_time = time.time()
+start_time = time.time()
 
 # GPS Setting
 port = "/dev/ttyAMA0"
@@ -28,10 +27,7 @@ ser = serial.Serial(port, baudrate=9600, timeout=0.5)
 PIN1 = 24
 PIN2 = 23
 EN1 = 18
-initial_motor_count = 0 # For Initial Start Motor
-motor_right = 0
-motor_left = 0
-motor_stop = 0
+motor_count = 0 # For Initial Start Motor
 # for pwm
 
 # def init():
@@ -46,6 +42,8 @@ pwm1.start(90) # 90% Throlttle
 
 # Gyro Settings
 # MPU6050 Registers
+
+
 bus = smbus.SMBus(1)  # or bus = smbus.SMBus(0) for older version boards
 Device_Address = 0x68  # MPU6050 device address
 PWR_MGMT_1 = 0x6B
@@ -59,7 +57,7 @@ ACCEL_ZOUT_H = 0x3F
 GYRO_XOUT_H = 0x43
 GYRO_YOUT_H = 0x45
 GYRO_ZOUT_H = 0x47
-wait_time = 0.001
+wait_time = 0.05
 
 # GPS Settings
 
@@ -70,6 +68,7 @@ GPGGA_buffer = 0
 NMEA_buff = 0
 lat_in_degrees = 0
 long_in_degrees = 0
+
 
 
 # Opencv Settings
@@ -112,6 +111,7 @@ start_time = time.time()
 #Load the Caffe model
 net = cv2.dnn.readNetFromCaffe(args.prototxt, args.weights)
 
+
 def MPU_Init(self):
     # write to sample rate register
     bus.write_byte_data(Device_Address, SMPLRT_DIV, 7)
@@ -143,22 +143,13 @@ def read_raw_data(addr):
 
 def motor_control_right():
 
-    # pwm1 = GPIO.PWM(EN1, 1000)  # 100hz sampling
-    # pwm1.start(90)  # 90% Throlttle
-    pwm1.ChangeDutyCycle(95)
+    pwm1 = GPIO.PWM(EN1, 1000)  # 100hz sampling
+    pwm1.start(90)  # 90% Throlttle
+    pwm1.ChangeDutyCycle(90)
     GPIO.output(PIN1,GPIO.HIGH)
     GPIO.output(PIN2,GPIO.LOW)
     # GPIO.cleanup()
 
-def motor_control_left():
-    pwm1.ChangeDutyCycle(95)
-    GPIO.output(PIN1,GPIO.LOW)
-    GPIO.output(PIN2,GPIO.HIGH)
-
-def motor_control_stop():
-    pwm1.ChangeDutyCycle(0)
-    GPIO.output(PIN1,GPIO.LOW)
-    GPIO.output(PIN2,GPIO.LOW)
 
 def GPS_Info():
     global NMEA_buff
@@ -191,160 +182,13 @@ def convert_to_degrees(raw_value):
     return position
 
 if __name__ == "__main__":
-
-    # while True:
-    #
-    #     if time.time() - start_time >= 5:
-    #         detected = 0
-    #         # Capture frame-by-frame
-    #         ret, frame = cap.read()
-    #         frame_resized = cv2.resize(frame, (300, 300))  # resize frame for prediction
-    #
-    #         # MobileNet requires fixed dimensions for input image(s)
-    #         # so we have to ensure that it is resized to 300x300 pixels.
-    #         # set a scale factor to image because network the objects has differents size.
-    #         # We perform a mean subtraction (127.5, 127.5, 127.5) to normalize the input;
-    #         # after executing this command our "blob" now has the shape:
-    #         # (1, 3, 300, 300)
-    #         blob = cv2.dnn.blobFromImage(frame_resized, 0.007843, (300, 300), (127.5, 127.5, 127.5), False)
-    #         # Set to network the input blob
-    #         net.setInput(blob)
-    #         # Prediction of network
-    #         detections = net.forward()
-    #
-    #         # Size of frame resize (300x300)
-    #         cols = frame_resized.shape[1]
-    #         rows = frame_resized.shape[0]
-    #
-    #         # For get the class and location of object detected,
-    #         # There is a fix index for class, location and confidence
-    #         # value in @detections array .
-    #         img_name = "Capture/capture_{}.png".format(str(time.time()))
-    #
-    #         for i in range(detections.shape[2]):
-    #             confidence = detections[0, 0, i, 2]  # Confidence of prediction
-    #             if confidence > args.thr:  # Filter prediction
-    #                 class_id = int(detections[0, 0, i, 1])  # Class label
-    #
-    #                 # Object location
-    #                 xLeftBottom = int(detections[0, 0, i, 3] * cols)
-    #                 yLeftBottom = int(detections[0, 0, i, 4] * rows)
-    #                 xRightTop = int(detections[0, 0, i, 5] * cols)
-    #                 yRightTop = int(detections[0, 0, i, 6] * rows)
-    #
-    #                 # Factor for scale to original size of frame
-    #                 heightFactor = frame.shape[0] / 300.0
-    #                 widthFactor = frame.shape[1] / 300.0
-    #                 # Scale object detection to frame
-    #                 xLeftBottom = int(widthFactor * xLeftBottom)
-    #                 yLeftBottom = int(heightFactor * yLeftBottom)
-    #                 xRightTop = int(widthFactor * xRightTop)
-    #                 yRightTop = int(heightFactor * yRightTop)
-    #                 # Draw location of object
-    #                 cv2.rectangle(frame, (xLeftBottom, yLeftBottom), (xRightTop, yRightTop),
-    #                               (0, 255, 0))
-    #
-    #                 # Draw label and confidence of prediction in frame resized
-    #                 if class_id in classNames:
-    #                     label = classNames[class_id] + ": " + str(confidence)
-    #                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    #
-    #                     yLeftBottom = max(yLeftBottom, labelSize[1])
-    #                     cv2.rectangle(frame, (xLeftBottom, yLeftBottom - labelSize[1]),
-    #                                   (xLeftBottom + labelSize[0], yLeftBottom + baseLine),
-    #                                   (255, 255, 255), cv2.FILLED)
-    #                     cv2.putText(frame, label, (xLeftBottom, yLeftBottom),
-    #                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-    #
-    #                     print(label)  # print class and confidence
-    #                     if label is not None:
-    #                         detected = 1
-    #                     start_time = time.time()
-    #         cv2.imwrite(img_name, frame)
-    #
-    #         cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-    #         cv2.imshow("frame", frame)
-    #         # out.write(frame)
-    #
-    #         img_counter += 1
-    #         if cv2.waitKey(1) >= 0:  # Break with ESC
-    #             break
-
     try:
-        while True:
-            # # Capture frame-by-frame
-            # ret, frame = cap.read()
-            # frame_resized = cv2.resize(frame, (300, 300))  # resize frame for prediction
-            # detected = 0
-            # # MobileNet requires fixed dimensions for input image(s)
-            # # so we have to ensure that it is resized to 300x300 pixels.
-            # # set a scale factor to image because network the objects has differents size.
-            # # We perform a mean subtraction (127.5, 127.5, 127.5) to normalize the input;
-            # # after executing this command our "blob" now has the shape:
-            # # (1, 3, 300, 300)
-            # blob = cv2.dnn.blobFromImage(frame_resized, 0.007843, (300, 300), (127.5, 127.5, 127.5), False)
-            # # Set to network the input blob
-            # net.setInput(blob)
-            # # Prediction of network
-            # detections = net.forward()
-            #
-            # # Size of frame resize (300x300)
-            # cols = frame_resized.shape[1]
-            # rows = frame_resized.shape[0]
-            #
-            # # For get the class and location of object detected,
-            # # There is a fix index for class, location and confidence
-            # # value in @detections array .
-            # for i in range(detections.shape[2]):
-            #     confidence = detections[0, 0, i, 2]  # Confidence of prediction
-            #     if confidence > args.thr:  # Filter prediction
-            #         class_id = int(detections[0, 0, i, 1])  # Class label
-            #
-            #         # Object location
-            #         xLeftBottom = int(detections[0, 0, i, 3] * cols)
-            #         yLeftBottom = int(detections[0, 0, i, 4] * rows)
-            #         xRightTop = int(detections[0, 0, i, 5] * cols)
-            #         yRightTop = int(detections[0, 0, i, 6] * rows)
-            #
-            #         # Factor for scale to original size of frame
-            #         heightFactor = frame.shape[0] / 300.0
-            #         widthFactor = frame.shape[1] / 300.0
-            #         # Scale object detection to frame
-            #         xLeftBottom = int(widthFactor * xLeftBottom)
-            #         yLeftBottom = int(heightFactor * yLeftBottom)
-            #         xRightTop = int(widthFactor * xRightTop)
-            #         yRightTop = int(heightFactor * yRightTop)
-            #         # Draw location of object
-            #         cv2.rectangle(frame, (xLeftBottom, yLeftBottom), (xRightTop, yRightTop),
-            #                       (0, 255, 0))
-            #
-            #         # Draw label and confidence of prediction in frame resized
-            #         if class_id in classNames:
-            #             label = classNames[class_id] + ": " + str(confidence)
-            #             labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-            #
-            #             yLeftBottom = max(yLeftBottom, labelSize[1])
-            #             cv2.rectangle(frame, (xLeftBottom, yLeftBottom - labelSize[1]),
-            #                           (xLeftBottom + labelSize[0], yLeftBottom + baseLine),
-            #                           (255, 255, 255), cv2.FILLED)
-            #             cv2.putText(frame, label, (xLeftBottom, yLeftBottom),
-            #                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
-            #             if label is not None:
-            #                 detected = 1
-            #             print(label)  # print class and confidence
-            #
-            # # cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-            # cv2.imshow("frame", frame)
-            # out.write(frame)
-            # if cv2.waitKey(1) >= 0:  # Break with ESC
-            #     break
+        while 1:
 
-            ### Opencv end
-
+            detected = 0
             # Get GPS Data
             received_data = (str)(ser.readline())  # read NMEA string received
             GPGGA_data_available = received_data.find(gpgga_info)  # check for NMEA GPGGA string
-
 
             #Read Accelerometer raw value
             acc_x = read_raw_data(ACCEL_XOUT_H)
@@ -365,32 +209,63 @@ if __name__ == "__main__":
             Gy = gyro_y / 131.0
             Gz = gyro_z / 131.0
 
+            Ax = round(Ax,4)
+            Ay = round(Ay,4)
+            Az = round(Az,4)
+            Gx = round(Gx,4)
+            Gy = round(Gy,4)
+            Gz = round(Gz,4)
 
-
+            # data float 처리 4자리?
+            csum = Ax+Ay+Az+Gx+Gy+Gz
+            # print(csum)
+            csum_raw = '{:.4f}'.format(csum)
+            # print(csum_raw)
             if (GPGGA_data_available > 0):
                 GPGGA_buffer = received_data.split("$GPGGA,", 1)[1]  # store data coming after "$GPGGA," string
                 NMEA_buff = (GPGGA_buffer.split(','))  # store comma separated data in buffer
                 GPS_Info()  # get time, latitude, longitude
-
                 # print("lat in degrees:", lat_in_degrees, " long in degree: ", long_in_degrees, '\n')
-                final_data = '[{},{},{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz,lat_in_degrees,long_in_degrees)
-                print('Sending: %s' % final_data)
+                final_data = '[{},{},{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz, lat_in_degrees, long_in_degrees)
+                # print('Sending: %s' % final_data)
                 device.send_data_async(remote_device, final_data)
-                # time.sleep(wait_time)
+                mpu_data_raw = '*,{},{},{},{},{},{},{},{},{}'.format(Gx, Gy, Gz, Ax, Ay, Az, lat_in_degrees, long_in_degrees, detected)
+                front_key = bytearray([0x76, 0x00, 0x60, 0x00])
+                mpu_data_byte = mpu_data_raw.encode()
+                mpu_data_bytearray = bytearray(mpu_data_byte)
+                colon = bytearray(b',')
+                csum_encode = csum_raw.encode()
+                csum_bytearr = bytearray(csum_encode)
+                final_key = bytearray([0x0D, 0x0A])
+                send_data = front_key + mpu_data_bytearray + colon + csum_bytearr + final_key
+                print('Sending: %s' % send_data)
+                device.send_data_async(remote_device, send_data)
+                time.sleep(wait_time)
+
             else:
+                # mpu_data_raw = '*,{:.4f},{:.4f},{:.4f},{:.4f},{:.4f},{:.4f}'.format(Gx, Gy, Gz,Ax, Ay, Az)
+                mpu_data_raw = '*,{},{},{},{},{},{},{},{},{}'.format(Gx, Gy, Gz, Ax, Ay, Az,34.610854, 127.205932, detected)
+                front_key = bytearray([0x76,0x00,0x60,0x00])
+                mpu_data_byte = mpu_data_raw.encode()
+                mpu_data_bytearray = bytearray(mpu_data_byte)
+                colon = bytearray(b',')
+                csum_encode = csum_raw.encode()
+                csum_bytearr = bytearray(csum_encode)
+                final_key = bytearray([0x0D,0x0A])
+                send_data = front_key + mpu_data_bytearray + colon + csum_bytearr + final_key
+                # print(mpu_data_bytearray)
+                # sent_to_land = [0x76,0x00,0x60,0x00,mpu_data,',',csum,0x0D,0x0A]
+                print('Sending: %s' % send_data)
+                # print(type(csum_bytearr))
+                device.send_data_async(remote_device, send_data)
+                time.sleep(wait_time)
 
-                final_data = '[{},{},{},{},{},{},{},{}]'.format(Ax, Ay, Az, Gx, Gy, Gz,34.610854, 127.205932)
-                print('Sending: %s' % final_data)
-                print("GPS is not working, show the Default Point")
-                device.send_data_async(remote_device, final_data)
-                # time.sleep(wait_time)
-
-            if abs(Gx) > 10 or abs(Gy) > 10 or abs(Gz) > 10:
-                if initial_motor_count == 0:
-                    initial_motor_count += 1
+            if abs(Gx) > 15 or abs(Gy) > 15 or abs(Gz) > 15:
+                if motor_count == 0:
+                    motor_count += 1
                     print("Start Motor")
 
-            if initial_motor_count == 1:
+            if motor_count == 1:
                 pwm1.ChangeDutyCycle(95)
                 GPIO.output(PIN1, GPIO.HIGH)
                 GPIO.output(PIN2, GPIO.LOW)
@@ -476,20 +351,6 @@ if __name__ == "__main__":
                 if cv2.waitKey(1) >= 0:  # Break with ESC
                     break
 
-                # if detected == 1:
-                #     try:
-                #         device.send_data_async(remote_device, 'Detected')
-                #         print('Send Warning success')
-                #     except Exception as e:
-                #         print('Transmit Error : %s' % str(e))
-                #         pass
-
-                    # try:
-                    #
-                    # except Exception as e:
-                    #     print('Transmit Fail : %s' % str(e))
-                    #     pass
-
                 detected = 0
 
     except OSError:
@@ -506,4 +367,3 @@ if __name__ == "__main__":
     except Exception as e:
         print("Transmit Fail : %s" % str(e))
         pass
-
